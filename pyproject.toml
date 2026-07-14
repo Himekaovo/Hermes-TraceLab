@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hermes-tracelab"
 version = "0.1.0"
-description = "Versioned provenance and captured-input replay for Hermes harness failures."
+description = "Captured-input provenance debugging for Hermes tool binding and session isolation failures."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Himekaovo" }]
 dependencies = []
 
