@@ -1,11 +1,11 @@
 # Hermes TraceLab
 
-Hermes TraceLab is a focused provenance and captured-input replay debugger for two classes of Hermes harness failures:
+Hermes TraceLab is designed as a focused provenance and captured-input replay debugger for two classes of Hermes harness failures:
 
 1. Outcome-to-invocation binding mismatches under retries or repeated tool calls.
 2. Foreign session history entering prompt assembly when the expected session ID is already known.
 
-The project is deliberately narrower than a general agent debugger. It separates executor-boundary observations from binding decisions, validates recorder fidelity, produces family-specific slices, and re-executes supported components under frozen inputs.
+The planned MVP separates executor-boundary observations from binding decisions, validates recorder fidelity, produces family-specific slices, and re-executes bounded components under captured inputs.
 
 ## Status
 
