@@ -15,7 +15,9 @@ The tool family requires two independently produced observations:
 - executor-boundary observation: each execution attempt produces a raw outcome;
 - binding-boundary observation: Hermes records which invocation a normalized result is actually bound to.
 
-A recorder must not manufacture both sides after the run and call the result lineage.
+Separate code locations are insufficient. The executor observation and binding observation must derive their authoritative identities from different lifecycle owners. Neither side may reconstruct its identity from metadata emitted by the other side.
+
+The executor observation must come from attempt-local execution ownership. The binding observation must come from the invocation actually selected by the production binding or assembly path. Neither side may simply copy the same invocation_id field from shared metadata. A recorder must not manufacture both sides after the run and call the result lineage.
 
 ## Identity ownership hypotheses
 
@@ -27,7 +29,7 @@ A recorder must not manufacture both sides after the run and call the result lin
 | normalized_result_id | normalization or assembly boundary | normalized result constructed | one result gets one ID |
 | binding_decision_id | binder | binding choice made | one decision gets one ID |
 
-Downstream components may reference upstream identities but may not overwrite them. The recorder records facts; it is not the authority that creates lifecycle identities after the fact.
+The raw-outcome identity must be created at the executor boundary. Downstream normalization and binding stages may reference it but must not replace or regenerate it. Downstream components may reference upstream identities but may not overwrite them. The recorder records facts; it is not the authority that creates lifecycle identities after the fact.
 
 ## Tool lineage hypothesis
 
@@ -62,9 +64,9 @@ If recorder fidelity fails, the diagnosis must be INCONCLUSIVE.
 ## Feasibility acceptance criteria
 
 - F1: every actual attempt has a unique, non-reused attempt_id;
-- F2: executor boundary independently records attempt_id to raw_outcome_id;
-- F3: binding boundary independently records normalized_result_id to selected_invocation_id;
-- F4: raw outcome, normalized result, and binding decision form a continuous immutable lineage;
+- F2: the executor observation obtains attempt ownership from the actual attempt-local execution context and does not read a binding-selected invocation identity;
+- F3: the binding observation records the invocation actually selected by the production binding or assembly path, rather than inferring it from result position or expected fixture metadata;
+- F4: a raw-outcome identity created at the executor boundary survives normalization into the binding decision without downstream regeneration or overwrite;
 - F5: an injected binding-policy fault is detected while a structurally similar legal retry control remains clean.
 
 ## Downgrade rules
