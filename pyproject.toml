@@ -1,0 +1,11 @@
+[project]
+name = "hermes-tracelab"
+version = "0.1.0"
+description = "Phase 0 feasibility tooling for Hermes TraceLab"
+requires-python = ">=3.9"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
