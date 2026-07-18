@@ -77,11 +77,13 @@ The fixture may provide an external expected lifecycle sequence for evaluation, 
 - implementing backward slicing or replay under the rejected binding claim;
 - adding Session family support without independent session authority and resource ownership.
 
-## Required owner decision
+## Recorded owner decision
 
-The next implementation step is blocked on scope selection:
+The scope selection is recorded in `spike/go-no-go.md`:
 
-- lifecycle observability for the pinned Hermes path; or
-- a new source audit of a different Hermes routing surface with a genuine candidate-selection boundary.
+- proceed with lifecycle observability for the pinned Hermes path;
+- defer any new source audit of a different Hermes routing surface with a genuine
+  candidate-selection boundary.
 
-No production instrumentation should be merged until that decision is recorded.
+No production instrumentation should be merged outside the Phase 1A lifecycle
+observability scope.
