@@ -10,4 +10,5 @@ Expected artifacts:
 
 - execution-path.md: real Hermes call path and boundary ownership;
 - instrumentation-notes.md: smallest observation changes and unresolved seams;
-- acceptance-results.md: F1-F5 evidence and the go/no-go decision.
+- acceptance-results.md: TB-F1 through TB-F5 evidence;
+- go-no-go.md: owner scope decision and authorized downgraded Phase 1A work.
