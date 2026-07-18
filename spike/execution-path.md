@@ -57,6 +57,99 @@ The exact source responsibilities are:
 - model_tools.py: forwards tool_call_id through middleware, approval, dispatch, post-hook, and result transformation.
 - tools/registry.py: invokes the handler, normalizes its return, and catches handler exceptions.
 
+## Pinned source evidence
+
+All source links below target commit
+`444b5e96fa2829c29cfd7ecdc84d89f83a1441da`.
+
+### Concurrent delivery association
+
+Claim: concurrent tool results are restored to the original model tool-call
+order by list index, not by a later binder selecting among candidate
+invocations.
+
+- Evidence:
+  [`agent/tool_executor.py#L325-L329`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L325-L329)
+  states that concurrent results are collected in original tool-call order.
+- Evidence:
+  [`agent/tool_executor.py#L567-L608`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L567-L608)
+  passes the original `tool_call.id` into `_invoke_tool`.
+- Evidence:
+  [`agent/tool_executor.py#L680-L715`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L680-L715)
+  maps each submitted future back to the original parsed-call index.
+- Evidence:
+  [`agent/tool_executor.py#L972-L978`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L972-L978)
+  constructs and appends the tool result message with `tc.id`.
+
+Implication: delivery association survives completion-order changes.
+
+Does not prove: a later production binder chooses among multiple candidate
+invocation identities.
+
+### Sequential propagation
+
+Claim: the sequential path propagates the model-owned `tool_call.id` from the
+parsed call into execution and final tool-result message construction.
+
+- Evidence:
+  [`agent/tool_executor.py#L1022-L1060`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L1022-L1060)
+  iterates the assistant message's tool calls and uses `tool_call.id` when
+  building immediate malformed-argument results.
+- Evidence:
+  [`agent/tool_executor.py#L1475-L1487`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L1475-L1487)
+  passes `tool_call.id` into `handle_function_call`.
+- Evidence:
+  [`agent/tool_executor.py#L1653-L1657`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/agent/tool_executor.py#L1653-L1657)
+  creates the final tool message with `tool_call.id` and appends it.
+
+Implication: the inspected synchronous path has strong lifecycle correlation
+via the provider/model-owned call ID.
+
+Does not prove: executor-owned attempts, raw outcomes, or independent binding
+decisions.
+
+### Handler dispatch and normalization
+
+Claim: handler execution and result normalization occur inside registry dispatch
+and return a normalized value upward; dispatch does not create a separate
+raw-outcome identity.
+
+- Evidence:
+  [`tools/registry.py#L584-L612`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/tools/registry.py#L584-L612)
+  normalizes handler results into supported string or multimodal shapes.
+- Evidence:
+  [`tools/registry.py#L614-L644`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/tools/registry.py#L614-L644)
+  invokes the handler, normalizes the result, and catches handler exceptions.
+
+Implication: registry dispatch is a useful lifecycle boundary for handler
+completion and normalized result observation.
+
+Does not prove: a distinct `RawOutcome` object or `NormalizedToolResult`
+identity that can be independently linked to a later binding decision.
+
+### Post hook versus final delivery
+
+Claim: `post_tool_call` observes the dispatch result before
+`transform_tool_result`; the final delivered result may differ from what the
+post hook saw.
+
+- Evidence:
+  [`model_tools.py#L1239-L1291`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/model_tools.py#L1239-L1291)
+  dispatches the tool through middleware and carries Hermes-owned correlation
+  keys.
+- Evidence:
+  [`model_tools.py#L1300-L1311`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/model_tools.py#L1300-L1311)
+  emits `post_tool_call`.
+- Evidence:
+  [`model_tools.py#L1313-L1347`](https://github.com/NousResearch/hermes-agent/blob/444b5e96fa2829c29cfd7ecdc84d89f83a1441da/model_tools.py#L1313-L1347)
+  runs `transform_tool_result` after `post_tool_call` and before returning the
+  result for conversation delivery.
+
+Implication: Phase 1A can measure post-hook-visible versus final-delivered
+result digests.
+
+Does not prove: post-hook observation equals final delivery.
+
 ## Identity observations
 
 Hermes already carries several IDs:
@@ -131,13 +224,13 @@ model tool_call
 
 The source does not support the stronger claim that TraceLab can presently diagnose outcome-to-invocation binding mismatch using independent producer and binder evidence.
 
-Under the spike rules:
+Under the Tool Binding spike rules:
 
-- F1 Attempt identity: NOT SATISFIED
-- F2 Origin capture: NOT SATISFIED
-- F3 Binding capture: NOT SATISFIED as a production candidate-selection seam
-- F4 Lineage continuity: NOT SATISFIED
-- F5 Fault discriminability: NOT RUN because the required evidence contract fails
+- TB-F1 Attempt Identity: NOT SATISFIED
+- TB-F2 Origin Capture: NOT SATISFIED
+- TB-F3 Binding Capture: NOT SATISFIED as a production candidate-selection seam
+- TB-F4 Lineage Continuity: NOT SATISFIED
+- TB-F5 Fault Discriminability: NOT RUN because the required evidence contract fails
 
 ## Decision
 
@@ -148,4 +241,6 @@ Before any permanent recorder, graph, backward slice, replay, or Session family 
 1. approve the lifecycle-observability scope; or
 2. identify another Hermes surface, such as an asynchronous gateway, subagent route, or result-routing layer, that contains a real candidate-selection seam and request a new evidence audit.
 
-This document records source evidence only. It does not claim that Hermes has no future or external surface with stronger binding semantics.
+The owner decision is recorded in `spike/go-no-go.md`: Phase 1A may proceed
+only as lifecycle observability. This document does not claim that Hermes has no
+future or external surface with stronger binding semantics.
