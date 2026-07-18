@@ -61,20 +61,36 @@ The system must distinguish:
 
 If recorder fidelity fails, the diagnosis must be INCONCLUSIVE.
 
-## Feasibility acceptance criteria
+## Tool Binding feasibility acceptance criteria
 
-- F1: every actual attempt has a unique, non-reused attempt_id;
-- F2: the executor observation obtains attempt ownership from the actual attempt-local execution context and does not read a binding-selected invocation identity;
-- F3: the binding observation records the invocation actually selected by the production binding or assembly path, rather than inferring it from result position or expected fixture metadata;
-- F4: a raw-outcome identity created at the executor boundary survives normalization into the binding decision without downstream regeneration or overwrite;
-- F5: an injected binding-policy fault is detected while a structurally similar legal retry control remains clean.
+These criteria are named `TB-F*` because they apply only to the original Tool
+Binding Debugger hypothesis.
+
+- TB-F1: every actual attempt has a unique, non-reused attempt_id;
+- TB-F2: the executor observation obtains attempt ownership from the actual attempt-local execution context and does not read a binding-selected invocation identity;
+- TB-F3: the binding observation records the invocation actually selected by the production binding or assembly path, rather than inferring it from result position or expected fixture metadata;
+- TB-F4: a raw-outcome identity created at the executor boundary survives normalization into the binding decision without downstream regeneration or overwrite;
+- TB-F5: an injected binding-policy fault is detected while a structurally similar legal retry control remains clean.
+
+## Lifecycle Observability acceptance criteria
+
+If the Tool Binding criteria fail for a pinned Hermes surface, the project may
+only proceed under a downgraded lifecycle-observability scope. These criteria
+are named `LO-F*` to avoid confusion with `TB-F*`.
+
+- LO-F1: supported lifecycle observations preserve Hermes-owned correlation keys without recorder regeneration;
+- LO-F2: dispatch, handler-completion, post-hook, transformation, and final-delivery observations are present for supported fixture runs;
+- LO-F3: dropped, duplicated, malformed, or impossible recorder events produce RECORDER_FAILURE or INCONCLUSIVE, never SUT_VIOLATION;
+- LO-F4: when transform_tool_result changes a result, TraceLab distinguishes post-hook-visible content from final-delivered content;
+- LO-F5: instrumentation does not materially alter call order, result order, or terminal status within the declared fixture boundary;
+- LO-F6: sequential repeated calls, concurrent completion reordering, handler failure, and transformation controls preserve correct tool_call_id correlation.
 
 ## Downgrade rules
 
-- F1 or F2 failure: downgrade to lifecycle observability; remove the binding-debugger claim.
-- F3 failure: keep outcome provenance only; do not diagnose final binding targets.
-- F4 failure: stop the tool binding family.
-- F5 failure: stop before graph, slice, or replay work.
+- TB-F1 or TB-F2 failure: downgrade to lifecycle observability; remove the binding-debugger claim.
+- TB-F3 failure: keep outcome provenance only; do not diagnose final binding targets.
+- TB-F4 failure: stop the tool binding family.
+- TB-F5 failure: stop before graph, slice, or replay work.
 
 ## Required next artifact
 
