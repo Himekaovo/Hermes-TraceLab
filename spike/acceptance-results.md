@@ -10,15 +10,15 @@
 - No TraceLab runtime instrumentation
 - No SUT mutation fixture
 
-## Acceptance table
+## Tool Binding acceptance table
 
 | Criterion | Result | Evidence judgment |
 |---|---|---|
-| F1 Attempt identity | NOT SATISFIED | No executor-owned attempt_id is created for every actual tool attempt. task_id, turn_id, and tool_call_id have different ownership and scope. |
-| F2 Origin capture | NOT SATISFIED | No independent executor boundary emits attempt_id -> raw_outcome_id. Handler completion can be observed, but it does not establish the proposed origin identity. |
-| F3 Binding capture | NOT SATISFIED | Hermes propagates tool_call_id and restores concurrent results by original call index; the inspected path has no later production binder selecting among candidate invocations. |
-| F4 Lineage continuity | NOT SATISFIED | The required raw_outcome_id -> normalized_result_id -> binding_decision_id chain does not exist as independently observable Hermes facts. |
-| F5 Fault discriminability | NOT RUN | SUT-level mutation and negative control were not created because the prerequisite evidence contract failed. |
+| TB-F1 Attempt Identity | NOT SATISFIED | No executor-owned attempt_id is created for every actual tool attempt. task_id, turn_id, and tool_call_id have different ownership and scope. |
+| TB-F2 Origin Capture | NOT SATISFIED | No independent executor boundary emits attempt_id -> raw_outcome_id. Handler completion can be observed, but it does not establish the proposed origin identity. |
+| TB-F3 Binding Capture | NOT SATISFIED | Hermes propagates tool_call_id and restores concurrent results by original call index; the inspected path has no later production binder selecting among candidate invocations. |
+| TB-F4 Lineage Continuity | NOT SATISFIED | The required raw_outcome_id -> normalized_result_id -> binding_decision_id chain does not exist as independently observable Hermes facts. |
+| TB-F5 Fault Discriminability | NOT RUN | SUT-level mutation and negative control were not created because the prerequisite evidence contract failed. |
 
 ## What is established
 
@@ -56,13 +56,16 @@ Stop conditions apply:
 - do not create a permanent recorder or public identity schema;
 - do not claim a Hermes bug has been diagnosed or fixed.
 
-## Required next decision
+## Recorded next decision
 
-The owner must review the evidence and choose one path:
+The owner has selected:
 
-1. Lifecycle observability MVP:
-   document and measure the verified Hermes tool lifecycle, including hook timing, result transformation, delivery association, trace completeness, and overhead; or
-2. New audit target:
-   identify a different Hermes surface with a real asynchronous gateway, subagent route, or result-routing candidate-selection seam, then repeat the spike before implementation.
+- Lifecycle Observability MVP for the pinned Hermes synchronous path.
 
-Until that decision is recorded, the project remains at the feasibility-spike boundary.
+This decision is recorded in `spike/go-no-go.md`. A new audit target, such as
+an asynchronous gateway, subagent route, or result-routing candidate-selection
+surface, is deferred.
+
+Phase 1A is conditional on the downgraded lifecycle-observability scope. It may
+not implement graph, backward slice, binding detector, replay-based repair,
+Session family, Skill Control, or Memory Control work.
