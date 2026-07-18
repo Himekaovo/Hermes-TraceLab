@@ -1,22 +1,33 @@
 # Hermes TraceLab
 
-Hermes TraceLab is designed as a focused provenance and captured-input replay debugger for two classes of Hermes harness failures:
+Hermes TraceLab is currently a bounded lifecycle-observability experiment for the
+pinned Hermes synchronous agent loop.
 
-1. Outcome-to-invocation binding mismatches under retries or repeated tool calls.
-2. Foreign session history entering prompt assembly when the expected session ID is already known.
+The Phase 0 spike rejected the original outcome-to-invocation binding-debugger
+hypothesis for the audited Hermes surface: the runtime does not expose
+independent executor-owned attempt, raw-outcome, normalized-result, and
+binding-decision identities. The current release target is therefore downgraded
+to observing and measuring Hermes tool lifecycle correlation, hook timing,
+result transformation visibility, delivery association, trace completeness, and
+instrumentation overhead.
 
-The planned MVP separates executor-boundary observations from binding decisions, validates recorder fidelity, produces family-specific slices, and re-executes bounded components under captured inputs.
+The original binding-debugger and session-isolation ideas remain documented as
+rejected/deferred hypotheses, not current implementation claims.
 
 ## Status
 
-The repository is in the architecture hypothesis and feasibility-spike stage. The first implementation gate is to prove that Hermes exposes independent producer-lineage and binding-decision evidence. Until that gate passes, the project must not claim to be a binding debugger.
+The repository is closing the architecture hypothesis and feasibility-spike
+stage. The owner decision recorded in `spike/go-no-go.md` authorizes a
+downgraded Phase 1A lifecycle-observability MVP only. The project must not claim
+to be a binding debugger for the pinned Hermes path.
 
 ## Scope
 
 - Hermes is the runtime base; this project does not use HelloAgents as its implementation base.
-- Tool diagnosis is limited to synchronous agent-loop cases in the supported fixture boundary.
-- Session diagnosis is structural and limited to session-history resource lineage.
-- Replay means captured-input component replay, not deterministic whole-agent replay.
+- Tool work is limited to lifecycle correlation in the pinned synchronous agent loop.
+- Binding mismatch diagnosis is explicitly out of scope for the current release.
+- Session diagnosis is deferred until a separate session authority/resource-ownership audit.
+- Replay is not part of the current lifecycle-observability release.
 - Recorder failures produce INCONCLUSIVE, not a Hermes violation.
 
 ## Repository map
